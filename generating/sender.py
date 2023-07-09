@@ -138,7 +138,7 @@ def sensor(sensor_id, start_date, end_date, delta):
         # print(f"{sensor_id}  {current_date.strftime('%d.%m.%Y %H:%M:%S')}  {current_temperature}°C  {oven_temperature}")
         
         # Записываем в очердь 
-        data = {"temperature": current_temperature, "date": current_date.strftime('%d.%m.%Y %H:%M:%S'), "id": sensor_id}
+        data = {"temperature": current_temperature, "date": current_date.strftime('%Y-%m-%d %H:%M:%S'), "id": sensor_id}
         message = json.dumps(data)
         send_message(message)
 
@@ -158,9 +158,9 @@ def send_message(message):
 
 
 def main():   
-    sensor_number = 1000        
+    sensor_number = 5 #better be 1000 but so slow...      
     start_date = datetime.datetime(2023, 1, 1, 0, 0, 0)
-    end_date = datetime.datetime(2023, 1, 1, 23, 55, 0)
+    end_date = datetime.datetime(2023, 1, 31, 23, 55, 0)
     delta = datetime.timedelta(minutes=5)
 
     for sensor_id in range(sensor_number):  
