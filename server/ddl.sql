@@ -6,7 +6,7 @@ create table raw_temperature (
 );
 
 create table temperature (
-	"date" timestamp not null,
+	"date" date primary key,
 	stoves_num integer not null, 
 	work_num integer not null, 
 	work_time numeric(8, 2) not null
