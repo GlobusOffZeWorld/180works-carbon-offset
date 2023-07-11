@@ -1,0 +1,113 @@
+:root {
+    --h1-font-size: 72pt;
+    --p-font-size: 20pt;
+}
+
+.App-header {
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+.App-header>.background {
+    background: url(https://180.works/static/media/carbon1.2e7a46958daa3ed5aec3.png);
+    background-size: cover;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+
+}
+
+.content {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    color: #fff;
+    background-color: rgba(0, 0, 0, .5);
+    min-height: 100%;
+    min-width: 100%;
+
+}
+
+@media screen and (width < 900px) {
+    :root {
+        --h1-font-size: 48pt;
+        --p-font-size: 16pt;
+    }
+}
+
+.content>p {
+    padding: 0 100px;
+    font-size: var(--p-font-size);
+    text-align: justify;
+}
+
+h1 {
+    font-size: var(--h1-font-size);
+}
+
+a {
+    color: #9BABBF;
+}
+
+
+.diagrams {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-content: space-evenly;
+    gap: 10px;
+    height: 100vh;
+}
+
+.diagram {
+    width: 45%;
+    height: 45%;
+    min-width: 460px;
+}
+
+
+a {
+    text-decoration: none;
+}
+
+.table-container {
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.short-numbers {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40px
+}
+
+.company-fact p {
+    text-align: center;
+    font-size: 32pt;
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px;
+    background: #595456;
+    color: #fff;
+}
