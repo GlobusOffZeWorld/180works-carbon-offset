@@ -2,7 +2,6 @@ import datetime
 import math
 import pika
 import json
-import random
 import time
 import numpy as np
 from scipy.stats import norm
@@ -32,7 +31,7 @@ def get_gauss_number(min, max, sigma):
 
 
 # Датчик температуры
-def sensor(sensor_id, start_date, end_date, delta):
+def sensor(sensor_id, start_date, end_date, delta, districts, mu_values, base_temp_values):
     delta_num = delta.total_seconds() // 60
     oven_temperature = 0
     block_time = 0
@@ -43,14 +42,9 @@ def sensor(sensor_id, start_date, end_date, delta):
     # Коэффициенты для рассчета времени нагрева и остывания в зависимости от max температуры печи
     k_warming_temp = 0.6        
     
-    # Данные для вычисления времени начала работы печи
-    mu_values = [7.5 * 60] * 11 + [13.5 * 60] * 6 + [19.5 * 60] * 7
     mu = 0 # мат ожидание(центр распределения)
     sigma = 50  # стандартное отклонение в минутах
-    # [mu +- sigma]  промежуток с вероятностью попасть 68%
-
-    # Температура по месяцам
-    base_temp_values = [24, 23.9, 23.7, 22.6, 21, 19.3, 18.7, 20, 22.8, 24.9, 25.7, 24.7]
+    district = np.random.choice(districts)
 
     current_date = start_date
     while current_date <= end_date:
@@ -92,7 +86,6 @@ def sensor(sensor_id, start_date, end_date, delta):
             elif work_time > 0:
                 work_time -= delta_num
 
-
         # Остывание печи до момента полного остывания или нового запуска печи
         # Остывает не равномерно
         if oven_temperature > 0 and work_time <= 0 and warm_time <= 0:
@@ -111,8 +104,9 @@ def sensor(sensor_id, start_date, end_date, delta):
         current_temperature = base_temp + temp_amp + oven_temperature + temp_amp_work + rand_temp_amp
         
         # Записываем в очердь 
-        data = {"temperature": current_temperature, "date": current_date.strftime('%d.%m.%Y %H:%M:%S'), "id": sensor_id}
+        data = {"temperature": current_temperature, "date": current_date.strftime('%d.%m.%Y %H:%M:%S'), "id": sensor_id, "district": district}
         message = json.dumps(data)
+
         send_message(message)
 
         current_date += delta
@@ -131,14 +125,27 @@ def send_message(message):
 
 
 def main():  
-    # Время выполнения 357sec для данных ниже 
+    # Районы Малавии
+    districts = ['Dedza', 'Dowa', 'Kasungu', 'Lilongwe',
+                'Mchinji', 'Nkhotakhota', 'Ntcheu', 'Ntchisi',
+                'Salima', 'Chitipa', 'Karonga', 'Likoma', 'Mzimba',
+                'Nkhata Bay', 'Rumphi', 'Balaka', 'Blantyre', 'Chikwawa',
+                'Chiradzulu', 'Machinga', 'Mangochi', 'Mulanje', 'Mwanza',
+                'Nsanje', 'Thyolo', 'Phalombe', 'Zomba', 'Neno']
+
+    # Температура по месяцам
+    base_temp_values = [24, 23.9, 23.7, 22.6, 21, 19.3, 18.7, 20, 22.8, 24.9, 25.7, 24.7]
+
+    # Центры распределений в зависимости от времени суток
+    mu_values = [7.5 * 60] * 11 + [13.5 * 60] * 6 + [19.5 * 60] * 7
+
     sensor_number = 1000    
     start_date = datetime.datetime(2023, 1, 1, 0, 0, 0)
     end_date = datetime.datetime(2023, 1, 30, 23, 55, 0)
     delta = datetime.timedelta(minutes=15)
-
+ 
     for sensor_id in range(sensor_number):  
-        sensor(sensor_id + 1, start_date, end_date, delta) 
+        sensor(sensor_id + 1, start_date, end_date, delta, districts, mu_values, base_temp_values) 
 
 
 if __name__ == "__main__":
