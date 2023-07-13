@@ -3,7 +3,7 @@
     --p-font-size: 20pt;
 }
 
-.App-header {
+.header {
     min-height: 100vh;
     width: 100%;
     overflow-x: hidden;
@@ -16,7 +16,7 @@
 }
 
 
-.App-header>.background {
+.header__background-image{
     background: url(https://180.works/static/media/carbon1.2e7a46958daa3ed5aec3.png);
     background-size: cover;
     position: relative;
@@ -26,7 +26,7 @@
 
 }
 
-.content {
+.header__content {
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -47,7 +47,7 @@
     }
 }
 
-.content>p {
+.header__content>p {
     padding: 0 100px;
     font-size: var(--p-font-size);
     text-align: justify;
@@ -62,7 +62,7 @@ a {
 }
 
 
-.diagrams {
+.diagrams-container {
     position: relative;
     display: flex;
     flex-wrap: wrap;
@@ -72,7 +72,7 @@ a {
     height: 100vh;
 }
 
-.diagram {
+.diagrams-container__chart {
     width: 45%;
     height: 45%;
     min-width: 460px;
@@ -83,13 +83,13 @@ a {
     text-decoration: none;
 }
 
-.table-container {
+.region-table {
     padding: 40px;
     display: flex;
     justify-content: center;
 }
 
-.short-numbers {
+.about {
     display: flex;
     flex-direction: column;
     gap: 40px;
@@ -98,7 +98,7 @@ a {
     margin-bottom: 40px
 }
 
-.company-fact p {
+.about__paragraph p {
     text-align: center;
     font-size: 32pt;
 }

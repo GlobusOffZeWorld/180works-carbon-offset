@@ -11,6 +11,28 @@ interface Details {
     average_number_of_hours: number
 }
 
+interface GraphInfo {
+    data: {
+        labels: number[],
+        datasets: [
+            {
+                label: string,
+                data: number[],
+                fill: boolean,
+                borderColor: string,
+                tension: number
+            }
+        ]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+}
+
 const App: FC = () => {
 
     const [details, setDetails] = useState<Array<Details>>([{
@@ -26,113 +48,65 @@ const App: FC = () => {
         setDetails(data);
     };
 
+    const days = [...Array(31).keys()]
+    days.shift()
+    
+    const makeDiagram = (label: string, data: number[]): GraphInfo => {
+        return {
+            data: {
+                labels: days,
+                datasets: [
+                    {
+                        label: label,
+                        data: data,
+                        fill: false,
+                        borderColor: 'rgb(89, 84, 86)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }
+    }
+
     useEffect(() => {
         getData();
     }, []);
 
     console.dir(details)
 
-    const days = [...Array(31).keys()]
-    days.shift()
+    
 
-    const diagrams = [{
-        data: {
-            labels: days,
-            datasets: [
-                {
-                    label: 'Amount of working stoves',
-                    data: details.map((detail: Details) => detail.amount_of_stoves),
-                    fill: false,
-                    borderColor: 'rgb(89, 84, 86)',
-                    tension: 0.5
-                }
-            ]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    },
-    {
-        data: {
-            labels: days,
-            datasets: [
-                {
-                    label: 'My Second Dataset',
-                    data: [65, 59, 80, 81, 56, 55, 40],
-                    fill: false,
-                    borderColor: 'rgb(89, 84, 86)',
-                    tension: 0.1
-                }
-            ]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    },
-    {
-        data: {
-            labels: days,
-            datasets: [
-                {
-                    label: 'My Third Dataset',
-                    data: [65, 59, 80, 81, 56, 55, 40],
-                    fill: false,
-                    borderColor: 'rgb(89, 84, 86)',
-                    tension: 0.1
-                }
-            ]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    },
-    {
-        data: {
-            labels: days,
-            datasets: [
-                {
-                    label: 'My Fourth Dataset',
-                    data: [65, 59, 80, 81, 56, 55, 40],
-                    fill: false,
-                    borderColor: 'rgb(89, 84, 86)',
-                    tension: 0.1
-                }
-            ]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    }
+    const diagrams = [
+        makeDiagram('Amount of working stoves', details.map((detail: Details) => detail.amount_of_stoves)),
+        makeDiagram('Amount of working stoves', details.map((detail: Details) => detail.average_number_of_hours)),
+        makeDiagram('Amount of working stoves', details.map((detail: Details) => detail.number)),
+        makeDiagram('Amount of working stoves', details.map((detail: Details) => detail.amount_of_stoves)),
+    
     ]
+
+    
 
     const missionInfo: string = `Использование печек существенно снижает потребление древесины, а следовательно и выброс CO2 в атмосферу.
     180.works хочет получить дополнительное финансирование за счет участия в программе Carbon Credits - ценные бумаги, которые выдаются за снижение выбросов CO2.
     Но для этого необходимо знать реальное использование печек.
     Сейчас компания исследует возможность встраивания в печки термодатчиков передающих данные по LoRaWAN протоколу.`
 
+
+
     const mainSiteReference: ReactElement = <a href="https://180.works/#/carbon-offset">180.works</a>
 
     return (
         <div>
-            <div className="App-header">
-                <div className="background"></div>
-                <div className="content">
+            <div className="header">
+                <div className="header__background-image"></div>
+                <div className="header__content">
                     <h1>Let's save Africa</h1>
                     <p>Некоммерческая организация {mainSiteReference} занимается восстановлением лесов в Африке. Частью этой программы является установка печек для приготовления пищи.
 
@@ -141,23 +115,23 @@ const App: FC = () => {
                 </div>
             </div>
 
-            <div className='diagrams'>
-                {diagrams.map(({ data, options }, index) => <div className="diagram" key={index}>
+            <div className='diagrams-container'>
+                {diagrams.map(({ data, options }, index) => <div className="diagrams-container__chart" key={index}>
                     <Graph data={data} options={options} />
                 </div>)}
             </div>
 
-            <div className="table-container">
+            <div className="region-table">
                 <Table />
             </div>
 
 
-            <div className="short-numbers">
+            <div className="about">
                 {details.map(({
                     number,
                     date,
                     amount_of_stoves,
-                    average_number_of_hours }, index) => <div key={index} className='company-fact'>
+                    average_number_of_hours }, index) => <div key={index} className='about__paragraph'>
                         <p>Amount of stoves:</p>
                         <p> {amount_of_stoves}</p>
                         <p>Average number of hours:</p>
