@@ -5,6 +5,7 @@ import json
 import time
 import numpy as np
 from scipy.stats import norm
+import psycopg2
 
 
 # Параметры подключения к RabbitMQ
@@ -21,6 +22,8 @@ RABBITMQ_PASSWORD = rabbitmq_config['password']
 QUEUE_NAME = rabbitmq_config['queue_name']
 
 
+# result = {}
+
 # Число сгенерить из промежутка с нормальным распределением в его центре
 def get_gauss_number(min, max, sigma):
     center = (max + min) / 2
@@ -31,7 +34,7 @@ def get_gauss_number(min, max, sigma):
 
 
 # Датчик температуры
-def sensor(sensor_id, start_date, end_date, delta, districts, mu_values, base_temp_values):
+def sensor(sensor_id, start_date, end_date, delta, mu_values, base_temp_values):
     delta_num = delta.total_seconds() // 60
     oven_temperature = 0
     block_time = 0
@@ -39,18 +42,23 @@ def sensor(sensor_id, start_date, end_date, delta, districts, mu_values, base_te
     work_time = 0
     temp_amp_work = 0
 
+    # it_worked = False
+
     # Коэффициенты для рассчета времени нагрева и остывания в зависимости от max температуры печи
     k_warming_temp = 0.6        
     
     mu = 0 # мат ожидание(центр распределения)
     sigma = 50  # стандартное отклонение в минутах
-    district = np.random.choice(districts)
+
 
     current_date = start_date
     while current_date <= end_date:
         month = current_date.month
         hour = current_date.hour
         minute = current_date.minute
+
+        # if hour == minute == 0:
+        #     it_worked = False
 
         # Базовая температура в зависимости от месяца
         base_temp = base_temp_values[month - 1]
@@ -72,11 +80,18 @@ def sensor(sensor_id, start_date, end_date, delta, districts, mu_values, base_te
             # Начало работы печи в if
             x = np.random.uniform(0, 1)
             if x < area:
+                # if not it_worked:
+                #     it_worked = True
+                #     result[current_date.date()][0] += 1
+                # result[current_date.date()][1] += 1
+
                 pick_temperature = get_gauss_number(min=90, max=200, sigma=55)
                 delta_temperature = pick_temperature - oven_temperature
                 warm_time = k_warming_temp * delta_temperature
                 work_time = get_gauss_number(min=20, max=150, sigma=30)
                 block_time = warm_time + work_time + get_gauss_number(min=20, max=150, sigma=30)
+
+                # result[current_date.date()][2] += (warm_time + work_time) / 60
         else:
             # Нагрев (равномерный на всем промежутке) и работа
             block_time -= delta_num  
@@ -104,7 +119,7 @@ def sensor(sensor_id, start_date, end_date, delta, districts, mu_values, base_te
         current_temperature = base_temp + temp_amp + oven_temperature + temp_amp_work + rand_temp_amp
         
         # Записываем в очердь 
-        data = {"temperature": current_temperature, "date": current_date.strftime('%d.%m.%Y %H:%M:%S'), "id": sensor_id, "district": district}
+        data = {"temperature": current_temperature, "date": current_date.strftime('%d.%m.%Y %H:%M:%S'), "id": sensor_id}
         message = json.dumps(data)
 
         send_message(message)
@@ -124,28 +139,30 @@ def send_message(message):
     connection.close()
 
 
-def main():  
-    # Районы Малавии
-    districts = ['Dedza', 'Dowa', 'Kasungu', 'Lilongwe',
-                'Mchinji', 'Nkhotakhota', 'Ntcheu', 'Ntchisi',
-                'Salima', 'Chitipa', 'Karonga', 'Likoma', 'Mzimba',
-                'Nkhata Bay', 'Rumphi', 'Balaka', 'Blantyre', 'Chikwawa',
-                'Chiradzulu', 'Machinga', 'Mangochi', 'Mulanje', 'Mwanza',
-                'Nsanje', 'Thyolo', 'Phalombe', 'Zomba', 'Neno']
-
+def main():
     # Температура по месяцам
     base_temp_values = [24, 23.9, 23.7, 22.6, 21, 19.3, 18.7, 20, 22.8, 24.9, 25.7, 24.7]
 
     # Центры распределений в зависимости от времени суток
     mu_values = [7.5 * 60] * 11 + [13.5 * 60] * 6 + [19.5 * 60] * 7
 
-    sensor_number = 1000    
+    sensor_number = 50
     start_date = datetime.datetime(2023, 1, 1, 0, 0, 0)
-    end_date = datetime.datetime(2023, 1, 30, 23, 55, 0)
+    end_date = datetime.datetime(2023, 1, 3, 23, 55, 0)
     delta = datetime.timedelta(minutes=15)
+
+    # cur_date = start_date
+    # while cur_date <= end_date:
+    #     result[cur_date.date()] = [0, 0, 0]
+    #     cur_date += datetime.timedelta(days=1)
  
-    for sensor_id in range(sensor_number):  
-        sensor(sensor_id + 1, start_date, end_date, delta, districts, mu_values, base_temp_values) 
+    for sensor_id in range(sensor_number):
+        sensor(sensor_id + 1, start_date, end_date, delta, mu_values, base_temp_values)
+
+    # with open('result.txt', 'w', newline='') as fw:
+    #     fw.write(f"Date,Stoves_num,Work_num,Work_time\n")
+    #     for r in result:
+    #         fw.write(f"{r},{result[r][0]},{result[r][1]},{round(result[r][2], 2)}\n")
 
 
 if __name__ == "__main__":
