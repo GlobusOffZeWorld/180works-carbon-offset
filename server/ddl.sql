@@ -1,6 +1,12 @@
+create table locations (
+	id_stove integer primary key,
+	country varchar not null,
+	province varchar not null
+);
+
 create table raw_temperature (
 	id_record serial primary key,
-	id_stove integer not null,
+	id_stove integer not null references locations(id_stove),
 	"date" timestamp not null,
 	temperature numeric(4, 1) not null
 );
