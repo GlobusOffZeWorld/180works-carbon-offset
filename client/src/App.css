@@ -111,3 +111,18 @@ footer {
     background: #595456;
     color: #fff;
 }
+
+
+
+table {
+    width: 100%;
+    font-size: 24pt;
+    margin: 20px;
+    text-align: center;
+    border-collapse: collapse;
+}
+
+td, th {
+    padding: 3px;
+    border: 1px solid #5e5e5e;
+}

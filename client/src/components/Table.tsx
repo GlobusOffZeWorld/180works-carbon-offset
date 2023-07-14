@@ -2,15 +2,22 @@
 import React, { useState } from 'react';
 import './styles.css'
 
-const Table = () => {
+interface District {
+    district: string,
+    count: number
+}
 
-  const [data, setData] = useState([
-    { country: 'South Africa', count: 250},
-    { country: 'Nigeria', count: 300},
-    { country: 'Algeria', count: 358},
-    { country: 'South Africa', count: 250},
-    { country: 'Nigeria', count: 300},
+const Table = (districts: District[]) => {
+
+  const [data, setData] = useState<District[]>([
+    { district: 'South Africa', count: 250},
+    { district: 'Nigeria', count: 300},
+    { district: 'Algeria', count: 358},
+    { district: 'South Africa', count: 250},
+    { district: 'Nigeria', count: 300},
   ]);
+
+  setData(districts)
 
   return (
     <table>
@@ -23,7 +30,7 @@ const Table = () => {
       <tbody>
         {data.map((row, index) => (
           <tr key={index}>
-            <td>{row.country}</td>
+            <td>{row.district}</td>
             <td>{row.count}</td>
           </tr>
         ))}
