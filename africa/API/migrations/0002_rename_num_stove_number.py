@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.RenameField(
             model_name='stove',
             old_name='num',
-            new_name='number',
+            new_name='sensor_id',
         ),
     ]
