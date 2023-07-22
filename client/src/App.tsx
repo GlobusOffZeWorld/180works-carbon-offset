@@ -1,9 +1,11 @@
-import React, { FC, ReactElement, useState, useEffect } from 'react';
-import Graph from './components/Graph';
-import './App.css'
+import React, { FC, ReactElement, useState, useEffect, createElement, ReactNode } from 'react';
+import LineChart from './components/LineChart';
+import BarChart from './components/BarChart';
 import Table from './components/Table';
+import './App.css'
 import axios from 'axios'
-import { Bar } from 'react-chartjs-2';
+import Chart, { Chart as ChartJS } from 'chart.js';
+
 
 interface Details {
     stoves_num: number,
@@ -18,14 +20,16 @@ interface District {
 }
 
 interface GraphInfo {
+    type: string,
     data: {
-        labels: number[],
+        labels: string[] | number[],
         datasets: [
             {
                 label: string,
                 data: number[],
                 fill: boolean,
                 borderColor: string,
+                backgroundColor?: string
                 tension: number
             }
         ]
@@ -33,7 +37,7 @@ interface GraphInfo {
     options: {
         scales: {
             y: {
-                beginAtZero: true
+                beginAtZero: boolean
             }
         }
     }
@@ -41,25 +45,19 @@ interface GraphInfo {
 
 const App: FC = () => {
 
-    const [details, setDetails] = useState<Details[]>([{
-        date: 'string',
-        stoves_num: 1,
-        work_num: 1,
-        work_time: 1
-    }])
+    const [details, setDetails] = useState<Details[]>([])
 
-    const [districts, setDistricts] = useState<District[]>([{
-        district: "temp",
-        count: 0
-    }])
+    const [districts, setDistricts] = useState<District[]>([])
 
+    districts.sort((a: District, b: District) => {
+        return b.count - a.count
+    })
 
     const getData = async () => {
         const { data } = await axios.get('http://127.0.0.1:8000/?format=json');
         setDetails(data);
 
     };
-
     const getDistricts = async () => {
         const { data } = await axios.get('http://127.0.0.1:8000/districts/?format=json');
         setDistricts(data)
@@ -73,24 +71,29 @@ const App: FC = () => {
         hoursCount: 0,
     }
 
+    totalInfo.stovesCount = districts.reduce<number>((acc: number, { count }: District) => {
+        return acc + count
+    }, 0)
+
+
     for (const info of reversedDetails) {
-        totalInfo.stovesCount += info.stoves_num
         totalInfo.startCount += info.work_num
         totalInfo.hoursCount += info.work_time
     }
 
-    const days = [...Array(31).keys()]
-    days.shift()
+    const days = [...Array(31).keys()].slice(1)
 
-    const makeDiagram = (label: string, data: number[]): GraphInfo => {
+    const makeDiagram = (type: string, label: string, labels: string[] | number[], data: number[]): GraphInfo => {
         return {
+            type: type,
             data: {
-                labels: days,
+                labels: labels,
                 datasets: [
                     {
                         label: label,
                         data: data,
                         fill: false,
+                        backgroundColor: 'rgba(89, 84, 86, 0.5)',
                         borderColor: 'rgb(89, 84, 86)',
                         tension: 0.1
                     }
@@ -106,65 +109,36 @@ const App: FC = () => {
         }
     }
 
+    const createChart = ({ type, data, options }: GraphInfo): ReactNode => {
+        switch (type) {
+            case 'line':
+                return <LineChart data={data as Chart.ChartData<'line'>} options={options as Chart.ChartOptions<'line'>} />
+            case 'bar':
+                return <BarChart data={data as Chart.ChartData<'bar'>} options={options as Chart.ChartOptions<'bar'>} />
+
+        }
+    }
+
     useEffect(() => {
         getData();
         getDistricts();
     }, []);
 
-    const slicedDistricts = districts.slice(0, 6)
-
-
-
-    const barData = {
-        labels: districts.map((el)=> {
-            return el.district
-        }),
-        datasets: [
-            {
-                label: 'Count of stoves in each district',
-                data: districts.map((el)=> {
-                    return el.count
-                }),
-                backgroundColor: 'rgba(89, 84, 86, 0.3)',
-                borderColor: 'rgb(89, 84, 86)',
-                borderWidth: 1,
-            },
-        ],
-    };
-
-    const barOptions = {
-
-    };
-
-
-
-
-
-
-
-
-
+    const slicedDistricts: District[] = districts.slice(0, 6)
 
     const diagrams = [
-        makeDiagram('Amount of working stoves', reversedDetails.map((detail: Details) => detail.stoves_num)),
-        makeDiagram('Average number of launches', reversedDetails.map((detail: Details) => detail.work_num)),
-        makeDiagram('Working hours', reversedDetails.map((detail: Details) => detail.work_time)),
-
+        makeDiagram('line', 'Amount of working stoves', days, reversedDetails.map((detail: Details) => detail.stoves_num)),
+        makeDiagram('line', 'Average number of launches', days, reversedDetails.map((detail: Details) => detail.work_num)),
+        makeDiagram('line', 'Working hours', days, reversedDetails.map((detail: Details) => detail.work_time)),
+        makeDiagram('bar', 'Count of stoves in each district', districts.map((el) => el.district), districts.map((el) => el.count))
     ]
-
-
-
 
     const missionInfo: string = `Использование печек существенно снижает потребление древесины, а следовательно и выброс CO2 в атмосферу.
     180.works хочет получить дополнительное финансирование за счет участия в программе Carbon Credits - ценные бумаги, которые выдаются за снижение выбросов CO2.
     Но для этого необходимо знать реальное использование печек.
     Сейчас компания исследует возможность встраивания в печки термодатчиков передающих данные по LoRaWAN протоколу.`
 
-    console.log(districts)
-
-
     const mainSiteReference: ReactElement = <a href="https://180.works/#/carbon-offset">180.works</a>
-
     return (
         <div>
             <div className="header">
@@ -179,38 +153,20 @@ const App: FC = () => {
             </div>
 
             <div className='diagrams-container'>
-                {diagrams.map(({ data, options }, index) => <div className="diagrams-container__chart" key={index}>
-                    <Graph data={data} options={options} />
-                </div>)}
-                <div className="diagrams-container__chart">
-
-                    <Bar data={barData} options={barOptions} />
-                </div>
+                {diagrams.map(({ type, data, options }: GraphInfo, index) => (
+                    <div className="diagrams-container__chart" key={index}>
+                        {createChart({ type, data, options })}
+                    </div>
+                ))}
             </div>
 
             <div className="region-table">
-                <table >
-                    <thead>
-                        <tr>
-                            <th>Country</th>
-                            <th>Furnace count</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {slicedDistricts.map((row, index) => (
-                            <tr key={index}>
-                                <td>{row.district}</td>
-                                <td>{row.count}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {/* <Table /> */}
+                <Table districts={slicedDistricts} />
             </div>
             <div className="about">
                 <div className="about__paragraph">
                     <p>Total amount:</p>
-                    <p> {totalInfo.startCount} Stoves</p>
+                    <p> {totalInfo.stovesCount} Stoves</p>
                 </div>
                 <div className="about__paragraph">
                     <p>Total amount of starts:</p>
@@ -220,10 +176,6 @@ const App: FC = () => {
                     <p>Total running time:</p>
                     <p>{totalInfo.hoursCount} Hours</p>
                 </div>
-
-
-
-
             </div>
             <footer>
                 <p>Copyright © 2023 Byelex. All rights reserved.</p>
