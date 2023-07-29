@@ -1,17 +1,13 @@
 import React, { FC } from 'react';
 import { Line } from 'react-chartjs-2';
-import Chart, { Chart as ChartJS, registerables } from 'chart.js';
+import GraphData from '../models/GraphData'
+import { Chart as ChartJS, registerables } from 'chart.js';
+
 
 ChartJS.register(...registerables);
 
-interface GraphProps {
-    data: Chart.ChartData<'line'>;
-    type?: Chart.ChartType;
-    options?: Chart.ChartOptions<'line'>;
-}
 
-
-const LineChart: FC<GraphProps> = ({ data, options }: GraphProps) => {
+const LineChart: FC<GraphData<'line'>> = ({ data, options }: GraphData<'line'>) => {
     return <Line data={data} options={options} />;
 }
 

@@ -1,10 +1,11 @@
-import React, { FC, ReactElement, useState, useEffect, createElement, ReactNode } from 'react';
+import React, { FC, ReactElement, useState, useEffect, ReactNode } from 'react';
 import LineChart from './components/LineChart';
 import BarChart from './components/BarChart';
 import Table from './components/Table';
 import './App.css'
 import axios from 'axios'
 import Chart, { Chart as ChartJS } from 'chart.js';
+import District from './models/District';
 
 
 interface Details {
@@ -12,11 +13,6 @@ interface Details {
     date: string,
     work_num: number,
     work_time: number
-}
-
-interface District {
-    district: string,
-    count: number
 }
 
 interface GraphInfo {
@@ -83,7 +79,7 @@ const App: FC = () => {
 
     const days = [...Array(31).keys()].slice(1)
 
-    const makeDiagram = (type: string, label: string, labels: string[] | number[], data: number[]): GraphInfo => {
+    const makeDiagram: (type: string, label: string, labels: string[] | number[], data: number[]) => GraphInfo = (type, label, labels, data)  => {
         return {
             type: type,
             data: {
@@ -138,7 +134,8 @@ const App: FC = () => {
     Но для этого необходимо знать реальное использование печек.
     Сейчас компания исследует возможность встраивания в печки термодатчиков передающих данные по LoRaWAN протоколу.`
 
-    const mainSiteReference: ReactElement = <a href="https://180.works/#/carbon-offset">180.works</a>
+    const mainSiteReference = <a href="https://180.works/#/carbon-offset">180.works</a>
+    
     return (
         <div>
             <div className="header">

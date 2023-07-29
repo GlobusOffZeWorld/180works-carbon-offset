@@ -1,11 +1,7 @@
 
 import React from 'react';
 import './styles.css'
-
-interface District {
-    district: string,
-    count: number
-}
+import District from '../models/District';
 
 interface TableProps {
     districts: District[],
