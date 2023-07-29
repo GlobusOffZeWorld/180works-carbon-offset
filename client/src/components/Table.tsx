@@ -1,23 +1,13 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import './styles.css'
+import District from '../models/District';
 
-interface District {
-    district: string,
-    count: number
+interface TableProps {
+    districts: District[],
 }
 
-const Table = (districts: District[]) => {
-
-  const [data, setData] = useState<District[]>([
-    { district: 'South Africa', count: 250},
-    { district: 'Nigeria', count: 300},
-    { district: 'Algeria', count: 358},
-    { district: 'South Africa', count: 250},
-    { district: 'Nigeria', count: 300},
-  ]);
-
-  setData(districts)
+const Table = ({districts}: TableProps) => {
 
   return (
     <table>
@@ -28,7 +18,7 @@ const Table = (districts: District[]) => {
         </tr>
       </thead>
       <tbody>
-        {data.map((row, index) => (
+        {districts.map((row, index) => (
           <tr key={index}>
             <td>{row.district}</td>
             <td>{row.count}</td>
