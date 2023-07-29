@@ -1,7 +1,9 @@
 # 180works-carbon-offset
 #### Project for summer practice after third course
 # Description:
-    180.works enables the reduction of greenhouse gas emissions by installing efficient cookstoves in rural communities. 180 cookstoves have a significant impact on the health and well-being of people and on the environment. Implementation has begun in Malawi.
+180.works enables the reduction of greenhouse gas emissions by installing efficient cookstoves in rural communities. 
+180 cookstoves have a significant impact on the health and well-being of people and on the environment. Implementation has begun in Malawi.
+
 ![Header](./docs/assets/Header.png)
 ![Charts](./docs/assets/Charts.png)
 ![Numbers](./docs/assets/Numbers.png)
